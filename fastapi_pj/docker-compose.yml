@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: ./app
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - minio
+    environment:
+      - DATABASE_URL=postgresql://myuser1:password@db:5432/fastapi_db
+      - MINIO_URL=localhost:9000
+      - MINIO_ACCESS_KEY=iyPdY3seSSoD5Gxwkhox
+      - MINIO_SECRET_KEY=u6cfkqrtEJ7QLKVx6jfH0L96gx75c9NqdS2J6Sob
+    volumes:
+      - ./app:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  db:
+    image: postgres:latest
+    container_name: fastapi-pg-test
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: myuser1
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fastapi_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio_test
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: iyPdY3seSSoD5Gxwkhox
+      MINIO_SECRET_KEY: u6cfkqrtEJ7QLKVx6jfH0L96gx75c9NqdS2J6Sob
+    volumes:
+      - minio_data:/data
+    command: server /data
+
+volumes:
+  db_data:
+  minio_data:
